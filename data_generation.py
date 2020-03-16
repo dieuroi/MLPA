@@ -26,6 +26,12 @@ def one_hot_converting(one_dic, src_id):
     return idx
 
 
+def turn_idx_to_one_hot(src_id, voc_size=10000):
+    idx = torch.zeros(1, voc_size).long()
+    idx[0, int(src_id)] = 1
+    return idx
+
+
 def generate(master_path='./ml', dataset_path='data'):
     if not os.path.exists("{}/warm_state/".format(master_path)):
         for state in states:
@@ -72,13 +78,24 @@ def generate(master_path='./ml', dataset_path='data'):
             dataset_y = json.loads(f.read())
 
         for _, user_id in tqdm(enumerate(dataset.keys())):
+            if os.path.exists("{}/log/{}/query_x_{}_u_m_ids.txt".format(master_path, state, idx)):
+                idx += 1
+                continue
+
             u_id = int(user_id)
             seen_img_len = len(dataset[str(u_id)])
             indices = list(range(seen_img_len))
 
             random.shuffle(indices)
             tmp_x = np.array(dataset[str(u_id)])
-            tmp_y = np.array(dataset_y[str(u_id)])
+            # tmp_y = np.array(dataset_y[str(u_id)])
+            tmp_y = dataset_y[str(u_id)]
+            support_query_y = list()
+            for words in tmp_y:
+                print(len(words))
+                support_query_y.append(np.eye(10000)[words])
+            support_query_y = np.array(support_query_y)
+            print(support_query_y.shape)
 
             support_x_app = None
             for m_id in tmp_x[indices[:-10]]:
@@ -100,8 +117,8 @@ def generate(master_path='./ml', dataset_path='data'):
                     query_x_app = torch.cat((query_x_app, tmp_x_converted), 0)
                 except:
                     query_x_app = tmp_x_converted
-            support_y_app = torch.LongTensor(tmp_y[indices[:-10]])
-            query_y_app = torch.LongTensor(tmp_y[indices[-10:]])
+            support_y_app = torch.LongTensor(support_query_y[indices[:-10]])
+            query_y_app = torch.LongTensor(support_query_y[indices[-10:]])
 
             pickle.dump(support_x_app, open("{}/{}/supp_x_{}.pkl".format(master_path, state, idx), "wb"))
             pickle.dump(support_y_app, open("{}/{}/supp_y_{}.pkl".format(master_path, state, idx), "wb"))

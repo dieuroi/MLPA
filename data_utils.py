@@ -131,6 +131,28 @@ def statistic(x_file='data/warm_state.json', y_file='data/warm_state_y.json'):
     print('count:', count)
 
 
+def all_statistic(src_file='data/iur.txt'):
+    user_dic = defaultdict(list)
+    file_object = codecs.open(src_file, mode='r', encoding='utf-8')
+    lines = file_object.readlines()
+    lines = [line for line in lines if len(line.strip().split('|')) > 2]
+    words = [line.strip().split('|')[-1] for line in lines]
+    items = [line.strip().split('|')[0] for line in lines]
+    users = [line.strip().split('|')[1] for line in lines]
+    new_lines = list()
+    for (u, i) in zip(users, items):
+        user_dic[u].append(i)
+    print('user numbers:', len(list(user_dic.keys())))
+    item_list = list()
+    # [12, 102]: 4867
+    for i, line in enumerate(words):
+        if 12 <= len(user_dic[users[i]]) <= 102:
+            item_list.append(str(items[i]))
+    item_set = list(set(item_list))
+    print('item:{}'.format(len(item_set)))
+
+
 if '__main__' == __name__:
     # exchange_pos()
-    statistic()
+    # statistic()
+    all_statistic()

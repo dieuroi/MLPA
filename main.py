@@ -36,8 +36,8 @@ if __name__ == "__main__":
     if not os.path.exists("{}/".format(master_path)):
         os.mkdir("{}/".format(master_path))
         # preparing dataset. It needs about 22GB of your hard disk space.
-        generate(master_path)
-        print('Data generation is done!')
+    generate(master_path)
+    print('Data generation is done!')
 
     # training model.
     mlpa = MLPA(config)

@@ -255,8 +255,6 @@ class MLPA(nn.Module):
 
     def cal_loss(self, scores, caps_sorted, decode_lengths):
         # we have to get caps after <start>
-        print('scores:', scores.shape)
-        print('targets:', caps_sorted.shape)
         targets = caps_sorted[:, 1:]
         scores = pack_padded_sequence(scores, decode_lengths, batch_first=True).data
         targets = pack_padded_sequence(targets, decode_lengths, batch_first=True).data
