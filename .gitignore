@@ -1,4 +1,5 @@
 .idea/
 bak/
 data/
+coco-caption-py3/
 *.pyc
