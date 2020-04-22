@@ -129,11 +129,10 @@ class BaseDataset(Dataset):
             if len(ui_cold_dic[key]) < 12 or len(ui_cold_dic[key]) > 102:
                 del ui_cold_dic[key]
                 del ui_cold_dic_y[key]
-        if config['Debug']:
-            print('warm:', len(list(warm_dic)))
-            print('u_cold:', len(list(u_cold_dic)))
-            print('i_cold:', len(list(i_cold_dic)))
-            print('ui_cold:', len(list(ui_cold_dic)))
+        print('warm:', len(list(warm_dic)))
+        print('u_cold:', len(list(u_cold_dic)))
+        print('i_cold:', len(list(i_cold_dic)))
+        print('ui_cold:', len(list(ui_cold_dic)))
         with open('data/warm_state.json', 'w') as fw:
             json.dump(warm_dic, fw)
         with open('data/user_cold_state.json', 'w') as fu:
@@ -233,6 +232,25 @@ def binaryMatrix(l, value=PAD_token):
                 m[i].append(1)
     return m
 
+def encode_dict_with_start_end(fn='data/warm_state_y.json'):
+    with open(fn, 'r') as f:
+        truthdic = json.load(f)
+    for key in truthdic:
+        sents = truthdic[key]
+        new_sents = list()
+        for sent in sents:
+            sent.insert(0, SOS_token)
+            if 0 not in sent:
+                sent.insert(99, EOS_token)
+                sent = sent[:100]
+            else:
+                sent.insert(sent.index(0), EOS_token)
+                sent = sent[:100]
+            new_sents.append(sent)
+        truthdic[key] = new_sents
+    with open(fn, 'w') as fw:
+        json.dump(truthdic, fw)
+
 
 if '__main__' == __name__:
 
@@ -243,7 +261,12 @@ if '__main__' == __name__:
         attr_input = [training_dict['user_id'], training_dict['item_id']]
         review_input = training_dict['review']
         image_input = training_dict['feature']
-    '''
+
     dataset = BaseDataset()
     dataset.partition()
+    '''
+    encode_dict_with_start_end()
+    encode_dict_with_start_end('data/user_cold_state_y.json')
+    encode_dict_with_start_end('data/item_cold_state_y.json')
+    encode_dict_with_start_end('data/user_and_item_cold_state_y.json')
 

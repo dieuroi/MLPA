@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import torch
 import pickle
@@ -6,6 +7,8 @@ import pickle
 from MLPA import MLPA
 from config import *
 from data_generation import generate
+
+# os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 def training(mlpa, total_dataset, batch_size, num_epoch, model_save=True, model_filename=None):
     if config['use_cuda']:
@@ -41,19 +44,22 @@ if __name__ == "__main__":
 
     # training model.
     mlpa = MLPA(config)
-    model_filename = "{}/models.pkl".format(master_path)
+    state = sys.argv[1]
+    model_filename = "{}/models_{}.pkl".format(master_path, state)
     if not os.path.exists(model_filename):
         # Load training dataset.
-        training_set_size = int(len(os.listdir("{}/warm_state".format(master_path))) / 4)
+        if config['Debug']:
+            print('Start!')
+        training_set_size = int(len(os.listdir("{}/{}".format(master_path, state))) / 4)
         supp_xs_s = []
         supp_ys_s = []
         query_xs_s = []
         query_ys_s = []
         for idx in range(training_set_size):
-            supp_xs_s.append(pickle.load(open("{}/warm_state/supp_x_{}.pkl".format(master_path, idx), "rb")))
-            supp_ys_s.append(pickle.load(open("{}/warm_state/supp_y_{}.pkl".format(master_path, idx), "rb")))
-            query_xs_s.append(pickle.load(open("{}/warm_state/query_x_{}.pkl".format(master_path, idx), "rb")))
-            query_ys_s.append(pickle.load(open("{}/warm_state/query_y_{}.pkl".format(master_path, idx), "rb")))
+            supp_xs_s.append(pickle.load(open("{}/{}/supp_x_{}.pkl".format(master_path, state, idx), "rb")))
+            supp_ys_s.append(pickle.load(open("{}/{}/supp_y_{}.pkl".format(master_path, state, idx), "rb")))
+            query_xs_s.append(pickle.load(open("{}/{}/query_x_{}.pkl".format(master_path, state, idx), "rb")))
+            query_ys_s.append(pickle.load(open("{}/{}/query_y_{}.pkl".format(master_path, state, idx), "rb")))
         total_dataset = list(zip(supp_xs_s, supp_ys_s, query_xs_s, query_ys_s))
         del(supp_xs_s, supp_ys_s, query_xs_s, query_ys_s)
         training(mlpa, total_dataset, batch_size=config['batch_size'], num_epoch=config['num_epoch'], model_save=True, model_filename=model_filename)

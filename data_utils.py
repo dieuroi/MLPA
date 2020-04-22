@@ -6,12 +6,12 @@
 # @File    : data_utils.py
 # @Software: PyCharm
 import os
-# import h5py
+import h5py
 import json
 import pickle
 import codecs
 from collections import Counter, defaultdict
-# from nltk import word_tokenize
+from nltk import word_tokenize
 
 
 def exchange_pos(src_file='iur.txt', dst_file='uir.txt'):
@@ -65,7 +65,7 @@ def gen_udata(data_file='uir.txt'):
     items = [line.strip().split('|')[1] for line in lines]
     users = [line.strip().split('|')[0] for line in lines]
     c_inputs = Counter()
-    vocab_size = 10000
+    vocab_size = 10000 #spare 4 place for start end, 9996?
     word2idx = dict()
     idx2word = dict()
     itemdic = dict()
@@ -118,41 +118,6 @@ def gen_udata(data_file='uir.txt'):
             data_uir.writelines(new_lines)
 
 
-def statistic(x_file='data/warm_state.json', y_file='data/warm_state_y.json'):
-    count = 0
-    with open(x_file, encoding="utf-8") as f:
-        dataset = json.loads(f.read())
-    with open(y_file, encoding="utf-8") as f:
-        dataset_y = json.loads(f.read())
-    assert len(list(dataset.keys())) == len(list(dataset_y.keys())), 'Dataset is not equal!'
-    for key in dataset.keys():
-        if len(dataset[key]) >= 12:
-            count += 1
-    print('count:', count)
-
-
-def all_statistic(src_file='data/iur.txt'):
-    user_dic = defaultdict(list)
-    file_object = codecs.open(src_file, mode='r', encoding='utf-8')
-    lines = file_object.readlines()
-    lines = [line for line in lines if len(line.strip().split('|')) > 2]
-    words = [line.strip().split('|')[-1] for line in lines]
-    items = [line.strip().split('|')[0] for line in lines]
-    users = [line.strip().split('|')[1] for line in lines]
-    new_lines = list()
-    for (u, i) in zip(users, items):
-        user_dic[u].append(i)
-    print('user numbers:', len(list(user_dic.keys())))
-    item_list = list()
-    # [12, 102]: 4867
-    for i, line in enumerate(words):
-        if 12 <= len(user_dic[users[i]]) <= 102:
-            item_list.append(str(items[i]))
-    item_set = list(set(item_list))
-    print('item:{}'.format(len(item_set)))
-
-
 if '__main__' == __name__:
     # exchange_pos()
-    # statistic()
-    all_statistic()
+    gen_udata()

@@ -89,12 +89,17 @@ def generate(master_path='./ml', dataset_path='data'):
             random.shuffle(indices)
             tmp_x = np.array(dataset[str(u_id)])
             # tmp_y = np.array(dataset_y[str(u_id)])
+            '''
             tmp_y = dataset_y[str(u_id)]
             support_query_y = list()
             for words in tmp_y:
-                print(len(words))
-                support_query_y.append(np.eye(10000)[words])
+                try:
+                    support_query_y.append(np.eye(10000)[words])
+                except:
+                    print(words)
             support_query_y = np.array(support_query_y)
+            '''
+            support_query_y = np.array(dataset_y[str(u_id)])
             print(support_query_y.shape)
 
             support_x_app = None

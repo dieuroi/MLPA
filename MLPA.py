@@ -154,10 +154,11 @@ class DecoderWithAttention(nn.Module):
     def init_hidden_state(self, encoder_out):
         """
         Creates the initial hidden and cell states for the decoder's LSTM based on the encoded images.
-        :param encoder_out: encoded images, a tensor of dimension (batch_size, num_pixels, encoder_dim)
+        :param encoder_out: encoded images, a tensor of dimension (batch_size, encoder_dim)
         :return: hidden state, cell state
         """
         mean_encoder_out = encoder_out.mean(dim=1)
+        # mean_encoder_out = encoder_out
         h = self.init_h(mean_encoder_out)  # (batch_size, decoder_dim)
         c = self.init_c(mean_encoder_out)
         return h, c
@@ -200,8 +201,10 @@ class DecoderWithAttention(nn.Module):
         # We won't decode at the <end> position, since we've finished generating as soon as we generate <end>
         # So, decoding lengths are actual lengths - 1
         decode_lengths = (caption_lengths - 1).tolist()
+        print('caption_lengths:{}'.format(decode_lengths))
 
         # Create tensors to hold word predicion scores and alphas
+        print('batch_size:{}, length:{}, vocab:{}'.format(batch_size, max(decode_lengths), vocab_size))
         predictions = torch.zeros(batch_size, max(decode_lengths), vocab_size).cuda()
         alphas = torch.zeros(batch_size, max(decode_lengths), num_pixels).cuda()
 
@@ -210,8 +213,7 @@ class DecoderWithAttention(nn.Module):
         # then generate a new word in the decoder with the previous word and the attention weighted encoding
         for t in range(max(decode_lengths)):
             batch_size_t = sum([l > t for l in decode_lengths])
-            attention_weighted_encoding, alpha = self.attention(encoder_out[:batch_size_t],
-                                                                h[:batch_size_t])
+            attention_weighted_encoding, alpha = self.attention(encoder_out[:batch_size_t], h[:batch_size_t])
             gate = self.sigmoid(self.f_beta(h[:batch_size_t]))  # gating scalar, (batch_size_t, encoder_dim)
             attention_weighted_encoding = gate * attention_weighted_encoding
             h, c = self.decode_step(
@@ -256,11 +258,17 @@ class MLPA(nn.Module):
     def cal_loss(self, scores, caps_sorted, decode_lengths):
         # we have to get caps after <start>
         targets = caps_sorted[:, 1:]
-        scores = pack_padded_sequence(scores, decode_lengths, batch_first=True).data
-        targets = pack_padded_sequence(targets, decode_lengths, batch_first=True).data
+        # targets = caps_sorted
         print('scores:', scores.shape)
         print('targets:', targets.shape)
-        input()
+        print('lengths:', decode_lengths)
+        scores = pack_padded_sequence(scores, decode_lengths, batch_first=True).data
+        targets = pack_padded_sequence(targets, decode_lengths, batch_first=True).data
+        # targets = torch.unsqueeze(targets, dim=1).cpu()
+        # targets = torch.zeros(targets.shape[0], 10000, dtype=torch.long).scatter_(1, targets, 1).cuda()
+        print('--- after padded ----')
+        print('scores:', scores.shape)
+        print('targets:', targets.shape)
         loss = self.criterion(scores, targets)
         return loss
 

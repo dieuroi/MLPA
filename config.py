@@ -11,7 +11,7 @@ config = {
     'embed_dim': 512,
     'attention_dim': 512,
     'decoder_dim': 512,
-    'vocab_size': 10000,
+    'vocab_size': 10004,
     'dropout': 0.5,
     # cuda setting
     'use_cuda': True,
@@ -19,7 +19,7 @@ config = {
     'inner': 1,
     'lr': 5e-5,
     'local_lr': 5e-6,
-    'batch_size': 32,
+    'batch_size': 8,
     'num_epoch': 20,
     'teacher_forcing_ratio': 1.0,
     # debug
