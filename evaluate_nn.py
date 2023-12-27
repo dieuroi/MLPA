@@ -17,7 +17,7 @@ from evalfunc.meteor.meteor import Meteor
 scorers = [
         (Bleu(4), ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4"]),
         (Cider(), "CIDEr"),
-        # (Meteor(), "METEOR"),
+        (Meteor(), "METEOR"),
         (Rouge(), "ROUGE_L")
     ]
 
